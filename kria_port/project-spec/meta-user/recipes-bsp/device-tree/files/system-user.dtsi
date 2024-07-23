@@ -1,0 +1,112 @@
+/include/ "system-conf.dtsi"
+/ {
+chosen {
+bootargs = "console=ttyPS0,115200 earlyprintk uio_pdrv_genirq.of_id=generic-uio root=/dev/mmcblk1p2 rw rootwait";
+};
+	dma_proxy {
+		compatible ="xlnx,dma_proxy";
+		dmas = <&axi_dma_0 0 &axi_dma_0 1>;
+		dma-names = "dma_proxy_tx", "dma_proxy_rx";
+		/*dma-coherent;*/
+	};
+};
+
+&C2C_axisafety_1 {
+status = "disabled";
+};
+
+&C2C_axisafety_2 {
+status = "disabled";
+};
+
+&sdhci0 {
+status = "okay";
+/*max-frequency = <50000000>;*/
+disable-wp;
+/delete-property/ no-1-8-v;
+broken-cd;
+};
+
+&sdhci1 {
+status = "okay";
+/*max-frequency = <50000000>;*/
+disable-wp;
+/delete-property/ no-1-8-v;
+broken-cd;
+};
+
+&dbg_debug_bridge_0 {
+compatible = "generic-uio";
+};
+
+&JTAG_axi_jtag_0 {
+compatible = "xlnx,xvc";
+};
+
+&JTAG_axi_jtag_1 {
+compatible = "xlnx,xvc";
+};
+
+&gem0 {
+phy-handle = <&phy0>;
+local-mac-address = [00 0a 35 00 00 02];
+mdio {
+/*#address-cells = <1>;
+#size-cells = <0>;*/
+phy0: phy0@3 {
+	      reg = <0x3>;
+             };
+phy1: phy1@2 {
+	      reg = <0x2>;
+      	     };
+};
+};
+
+&gem1 {
+phy-handle = <&phy1>;
+local-mac-address = [00 0a 35 00 00 03];
+/*mdio {
+#address-cells = <1>;
+#size-cells = <0>;*/
+/*phy0: phy0@2 {
+	      reg = <0x2>;
+             };*/
+/*phy1: phy1@3 {
+	      reg = <0x3>;
+             };
+};*/
+};
+
+&watchdog0 {
+status = "okay";
+reset-on-timeout;
+timeout-sec = <10>;
+};
+
+&i2c0 {
+	clock-frequency = <100000>;
+	/*clock-frequency = <90000>;*/
+	/*clock-frequency = <80000>;*/
+	status = "okay";
+};
+
+&hier_0_axi_mcdma_0 {
+		compatible = "xlnx,eth-dma";
+		xlnx,addrwidth = [20];
+	};
+
+&xxv_ethernet_0 {
+	axistream-connected = <&hier_0_axi_mcdma_0>;
+	axistream-control-connected = <&hier_0_axi_mcdma_0>;
+	clock-names = "rx_core_clk_0", "dclk", "s_axi_aclk_0", "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
+	clocks = <&misc_clk_1>, <&zynqmp_clk 71>, <&zynqmp_clk 73>, <&misc_clk_0>, <&misc_clk_0>, <&misc_clk_0>, <&misc_clk_0>;
+	interrupt-names = "mm2s_ch1_introut", "mm2s_ch2_introut", "mm2s_ch3_introut", "mm2s_ch4_introut", "mm2s_ch5_introut", "mm2s_ch6_introut", "mm2s_ch7_introut", "mm2s_ch8_introut", "mm2s_ch9_introut", "mm2s_ch10_introut", "mm2s_ch11_introut", "mm2s_ch12_introut", "mm2s_ch13_introut", "mm2s_ch14_introut", "mm2s_ch15_introut", "mm2s_ch16_introut", "s2mm_ch1_introut", "s2mm_ch2_introut", "s2mm_ch3_introut", "s2mm_ch4_introut", "s2mm_ch5_introut", "s2mm_ch6_introut", "s2mm_ch7_introut", "s2mm_ch8_introut", "s2mm_ch9_introut", "s2mm_ch10_introut", "s2mm_ch11_introut", "s2mm_ch12_introut", "s2mm_ch13_introut", "s2mm_ch14_introut", "s2mm_ch15_introut", "s2mm_ch16_introut";
+	interrupt-parent = <&gic>;
+	interrupts = <0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 104 4 0 105 4 0 105 4 0 105 4 0 105 4 0 106 4 0 106 4 0 106 4 0 106 4 0 107 4 0 107 4 0 107 4 0 107 4 0 108 4 0 108 4 0 108 4 0 108 4>;
+	xlnx,channel-ids = "1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","10";
+	xlnx,include-dre;
+	xlnx,num-queues = [00 10];
+	xlnx,rxmem = <0x40000>;
+	xlnx,txcsum = <0x1>;
+	xlnx,rxcsum = <0x2>;
+};

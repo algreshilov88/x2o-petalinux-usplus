@@ -1,0 +1,35 @@
+From e866630535db02547301602be0d0ed47958ff312 Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Wed, 12 Jul 2023 04:19:44 -0400
+Subject: [PATCH] i2c cdns timeout set to 5ms + disabled pm timeout +
+ adap.retries set to 1
+
+---
+ drivers/i2c/busses/i2c-cadence.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-cadence.c b/drivers/i2c/busses/i2c-cadence.c
+index 5f51c0e7c92b..5cc866c9ceed 100644
+--- a/drivers/i2c/busses/i2c-cadence.c
++++ b/drivers/i2c/busses/i2c-cadence.c
+@@ -113,9 +113,9 @@
+ 					 CDNS_I2C_IXR_DATA | \
+ 					 CDNS_I2C_IXR_COMP)
+ 
+-#define CDNS_I2C_TIMEOUT		msecs_to_jiffies(1000)
++#define CDNS_I2C_TIMEOUT                msecs_to_jiffies(5)
+ /* timeout for pm runtime autosuspend */
+-#define CNDS_I2C_PM_TIMEOUT		1000	/* ms */
++#define CNDS_I2C_PM_TIMEOUT             -1      /* ms */
+ 
+ #define CDNS_I2C_FIFO_DEPTH		16
+ /* FIFO depth at which the DATA interrupt occurs */
+@@ -1412,7 +1412,7 @@ static int cdns_i2c_probe(struct platform_device *pdev)
+ 	id->adap.dev.of_node = pdev->dev.of_node;
+ 	id->adap.algo = &cdns_i2c_algo;
+ 	id->adap.timeout = CDNS_I2C_TIMEOUT;
+-	id->adap.retries = 3;		/* Default retry value. */
++	id->adap.retries = 1;		/* Default retry value. */
+ 	id->adap.algo_data = id;
+ 	id->adap.dev.parent = &pdev->dev;
+ 	init_completion(&id->xfer_done);
