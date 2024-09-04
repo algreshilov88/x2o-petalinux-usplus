@@ -50,7 +50,8 @@ static struct resource *db_res = NULL;
 static void __iomem * db_ptrs[CONFIG_COUNT];
 
 static void xil_xvc_cleanup(void) {
-	printk(KERN_INFO LOG_PREFIX "Cleaning up resources...\n");
+	//printk(KERN_INFO LOG_PREFIX "Cleaning up resources...\n");
+	printk(KERN_INFO "Cleaning up resources...\n");
 
 	if (!IS_ERR(xvc_dev_class)) {
 		class_destroy(xvc_dev_class);
@@ -153,12 +154,14 @@ int probe(struct platform_device* pdev) {
 
 			xvc_ioc_device = device_create(xvc_dev_class, NULL, ioc_device_number, NULL, ioc_device_name);
 			if (IS_ERR(xvc_ioc_device)) {
-				printk(KERN_WARNING LOG_PREFIX "Failed to create device %s", ioc_device_name);
+				//printk(KERN_WARNING LOG_PREFIX "Failed to create device %s", ioc_device_name);
+				printk(KERN_WARNING "Failed to create device %s", ioc_device_name);
 				xil_xvc_cleanup();
 				dev_err(&pdev->dev, "unable to create the device\n");
 				return status;
 			} else {
-				printk(KERN_INFO LOG_PREFIX "Created device %s", ioc_device_name);
+				//printk(KERN_INFO LOG_PREFIX "Created device %s", ioc_device_name);
+				printk(KERN_INFO "Created device %s", ioc_device_name);
 			}
 
 #ifndef GET_DB_BY_RES
@@ -174,10 +177,12 @@ int probe(struct platform_device* pdev) {
 			db_ptrs[i] = devm_ioremap_resource(&pdev->dev, db_res);
 #endif
 			if (!db_ptrs[i] || IS_ERR(db_ptrs[i])) {
-				printk(KERN_ERR LOG_PREFIX "Failed to remap debug bridge memory at offset 0x%lX, size %lu", db_addr, db_size);
+				//printk(KERN_ERR LOG_PREFIX "Failed to remap debug bridge memory at offset 0x%lX, size %lu", db_addr, db_size);
+				printk(KERN_ERR "Failed to remap debug bridge memory at offset 0x%lX, size %lu", db_addr, db_size);
 				return -ENOMEM;
 			} else {
-				printk(KERN_INFO LOG_PREFIX "Mapped debug bridge at offset 0x%lX, size 0x%lX", db_addr, db_size);
+				//printk(KERN_INFO LOG_PREFIX "Mapped debug bridge at offset 0x%lX, size 0x%lX", db_addr, db_size);
+				printk(KERN_INFO "Mapped debug bridge at offset 0x%lX, size 0x%lX", db_addr, db_size);
 			}
 		}
 	}
@@ -203,7 +208,8 @@ static int remove(struct platform_device* pdev) {
 				}
 #endif
 
-				printk(KERN_INFO LOG_PREFIX "Unmapping debug bridge at offset 0x%lX, size %lu", db_addr, db_size);
+				//printk(KERN_INFO LOG_PREFIX "Unmapping debug bridge at offset 0x%lX, size %lu", db_addr, db_size);
+				printk(KERN_INFO "Unmapping debug bridge at offset 0x%lX, size %lu", db_addr, db_size);
 #ifndef GET_DB_BY_RES
 				iounmap(db_ptrs[i]);
 #else
@@ -213,7 +219,8 @@ static int remove(struct platform_device* pdev) {
 
 				ioc_device_number = MKDEV(MAJOR(xvc_ioc_dev_region), MINOR(xvc_ioc_dev_region) + i);
 				device_destroy(xvc_dev_class, ioc_device_number);
-				printk(KERN_INFO LOG_PREFIX "Destroyed device number %u (user config %i)", ioc_device_number, i);
+				//printk(KERN_INFO LOG_PREFIX "Destroyed device number %u (user config %i)", ioc_device_number, i);
+				printk(KERN_INFO "Destroyed device number %u (user config %i)", ioc_device_number, i);
 			}
 		}
 	}
@@ -245,13 +252,15 @@ static struct platform_driver xil_xvc_plat_driver = {
 static int __init xil_xvc_init(void) {
 	int err = 0;
 
-	printk(KERN_INFO LOG_PREFIX "Starting...\n");
+	//printk(KERN_INFO LOG_PREFIX "Starting...\n");
+	printk(KERN_INFO "Starting...\n");
 
 	// Register the character packet device major and minor numbers
 	err = alloc_chrdev_region(&xvc_ioc_dev_region, 0, CONFIG_COUNT, XVC_DRIVER_NAME);
 	if (err != 0) {
 		xil_xvc_cleanup();
-		printk(KERN_ERR LOG_PREFIX "unable to get char device region\n");
+		//printk(KERN_ERR LOG_PREFIX "unable to get char device region\n");
+		printk(KERN_ERR "unable to get char device region\n");
 		return err;
 	}
 

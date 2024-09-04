@@ -1,0 +1,83 @@
+From f7f09631b974615c81297a9cdd9afac387b50986 Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Mon, 18 Jul 2022 13:36:36 -0400
+Subject: [PATCH] User patch for VSC8562 to enable auto-negotiation
+
+---
+ drivers/net/phy/mscc/mscc.h      |  4 ++++
+ drivers/net/phy/mscc/mscc_main.c | 40 ++++++++++++++++++++++++++++++++
+ 2 files changed, 44 insertions(+)
+
+diff --git a/drivers/net/phy/mscc/mscc.h b/drivers/net/phy/mscc/mscc.h
+index f704c219818b..b15a342cab49 100644
+--- a/drivers/net/phy/mscc/mscc.h
++++ b/drivers/net/phy/mscc/mscc.h
+@@ -23,6 +23,10 @@ enum rgmii_clock_delay {
+ 	RGMII_CLK_DELAY_3_4_NS = 7
+ };
+ 
++/* SGMII User settings for VSC8562 */
++#define MSCC_PHY_VSC8562_PCS_CNTL	  16
++#define MSCC_PHY_VSC8562_ANEG_EN	  0x0080
++
+ /* Microsemi VSC85xx PHY registers */
+ /* IEEE 802. Std Registers */
+ #define MSCC_PHY_BYPASS_CONTROL		  18
+diff --git a/drivers/net/phy/mscc/mscc_main.c b/drivers/net/phy/mscc/mscc_main.c
+index b4eaa6c0478a..0b501eec9a63 100644
+--- a/drivers/net/phy/mscc/mscc_main.c
++++ b/drivers/net/phy/mscc/mscc_main.c
+@@ -1242,6 +1242,35 @@ static int vsc8574_config_pre_init(struct phy_device *phydev)
+ 	return ret;
+ }
+ 
++/* bus->mdio_lock should be locked when using this function */
++static int vsc8562_config_post_init(struct phy_device *phydev)
++{
++	u16 reg;
++	int ret = 0;
++
++	phy_base_write(phydev, MSCC_EXT_PAGE_ACCESS, MSCC_PHY_PAGE_STANDARD);
++
++	/* all writes below are broadcasted to all PHYs in the same package */
++	reg = phy_base_read(phydev, MSCC_PHY_EXT_CNTL_STATUS);
++	reg |= SMI_BROADCAST_WR_EN;
++	phy_base_write(phydev, MSCC_PHY_EXT_CNTL_STATUS, reg);
++
++	/* Enable autonegotiation for VSC8562 PHYs (shared MDIO) */
++	phy_base_write(phydev, MSCC_EXT_PAGE_ACCESS, MSCC_PHY_PAGE_EXTENDED_3);
++	reg = phy_base_read(phydev, MSCC_PHY_VSC8562_PCS_CNTL);
++	reg |= MSCC_PHY_VSC8562_ANEG_EN;
++	phy_base_write(phydev, MSCC_PHY_VSC8562_PCS_CNTL, reg);
++
++	phy_base_write(phydev, MSCC_EXT_PAGE_ACCESS, MSCC_PHY_PAGE_STANDARD);
++
++	/* end of write broadcasting */
++	reg = phy_base_read(phydev, MSCC_PHY_EXT_CNTL_STATUS);
++	reg &= ~SMI_BROADCAST_WR_EN;
++	phy_base_write(phydev, MSCC_PHY_EXT_CNTL_STATUS, reg);
++
++	return ret;
++}
++
+ /* Access LCPLL Cfg_2 */
+ static void vsc8584_pll5g_cfg2_wr(struct phy_device *phydev,
+ 				  bool disable_fsm)
+@@ -1732,6 +1761,17 @@ static int vsc8584_config_init(struct phy_device *phydev)
+ 				goto err;
+ 			break;
+ 		case PHY_ID_VSC856X:
++			ret = vsc8584_config_pre_init(phydev);
++			if (ret)
++				goto err;
++			ret = vsc8584_config_host_serdes(phydev);
++			if (ret)
++				goto err;
++			vsc85xx_coma_mode_release(phydev);
++			ret = vsc8562_config_post_init(phydev);
++			if (ret)
++				goto err;
++			break;
+ 		case PHY_ID_VSC8575:
+ 		case PHY_ID_VSC8582:
+ 		case PHY_ID_VSC8584:

@@ -1,4 +1,4 @@
-From f98d30f154ac573762ce66d14ed9f5d0dc742255 Mon Sep 17 00:00:00 2001
+From f7f09631b974615c81297a9cdd9afac387b50986 Mon Sep 17 00:00:00 2001
 From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
 Date: Mon, 18 Jul 2022 13:36:36 -0400
 Subject: [PATCH] User patch for VSC8562 to enable auto-negotiation
@@ -24,7 +24,7 @@ index f704c219818b..b15a342cab49 100644
  /* IEEE 802. Std Registers */
  #define MSCC_PHY_BYPASS_CONTROL		  18
 diff --git a/drivers/net/phy/mscc/mscc_main.c b/drivers/net/phy/mscc/mscc_main.c
-index b8c67aac46d7..85694621c3cd 100644
+index b4eaa6c0478a..0b501eec9a63 100644
 --- a/drivers/net/phy/mscc/mscc_main.c
 +++ b/drivers/net/phy/mscc/mscc_main.c
 @@ -1242,6 +1242,35 @@ static int vsc8574_config_pre_init(struct phy_device *phydev)

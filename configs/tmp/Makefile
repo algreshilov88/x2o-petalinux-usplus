@@ -7,8 +7,6 @@
 #
 # 27 Aug 2024, CERN, Aleksei Greshilov <aleksei.greshilov@cern.ch>
 # Added support for X2O platform.
-obj-y                           += x2o/
-
 obj-y				+= irqchip/
 obj-y				+= bus/
 
@@ -66,6 +64,9 @@ obj-y				+= iommu/
 obj-y				+= gpu/
 
 obj-$(CONFIG_CONNECTOR)		+= connector/
+
+# X2O platform drivers.
+obj-y                           += x2o/
 
 # i810fb and intelfb depend on char/agp/
 obj-$(CONFIG_FB_I810)           += video/fbdev/i810/

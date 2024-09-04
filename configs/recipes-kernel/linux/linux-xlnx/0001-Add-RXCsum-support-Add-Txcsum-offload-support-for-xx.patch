@@ -1,4 +1,4 @@
-From 250ef1c8b47102d3bf6d3d687185cedf48cb63f2 Mon Sep 17 00:00:00 2001
+From 1a9c1b37f88e95b528e4574c7930c98703ad3867 Mon Sep 17 00:00:00 2001
 From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
 Date: Mon, 19 Dec 2022 16:26:07 -0500
 Subject: [PATCH] Add RXCsum support + Add Txcsum offload support for xxv
@@ -9,10 +9,10 @@ Subject: [PATCH] Add RXCsum support + Add Txcsum offload support for xxv
  1 file changed, 19 insertions(+)
 
 diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
-index ad6819471893..00b86bdb927f 100644
+index 3742284ece9e..07566bc91b5d 100644
 --- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
 +++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
-@@ -1362,6 +1362,15 @@ int axienet_queue_xmit(struct sk_buff *skb,
+@@ -1368,6 +1368,15 @@ int axienet_queue_xmit(struct sk_buff *skb,
  			cur_p->app0 |= 1;
  			cur_p->app1 = (csum_start_off << 16) | csum_index_off;
  		}
@@ -28,7 +28,7 @@ index ad6819471893..00b86bdb927f 100644
  	} else if (skb->ip_summed == CHECKSUM_UNNECESSARY &&
  		   !lp->eth_hasnobuf &&
  		   (lp->axienet_config->mactype == XAXIENET_1G)) {
-@@ -1577,6 +1586,14 @@ static int axienet_recv(struct net_device *ndev, int budget,
+@@ -1583,6 +1592,14 @@ static int axienet_recv(struct net_device *ndev, int budget,
  			    csumstatus == XAE_IP_UDP_CSUM_VALIDATED) {
  				skb->ip_summed = CHECKSUM_UNNECESSARY;
  			}
@@ -43,7 +43,7 @@ index ad6819471893..00b86bdb927f 100644
  		} else if ((lp->features & XAE_FEATURE_PARTIAL_RX_CSUM) != 0 &&
  			   skb->protocol == htons(ETH_P_IP) &&
  			   skb->len > 64 && !lp->eth_hasnobuf &&
-@@ -3271,11 +3288,13 @@ static int axienet_probe(struct platform_device *pdev)
+@@ -3280,11 +3297,13 @@ static int axienet_probe(struct platform_device *pdev)
  			lp->csum_offload_on_rx_path =
  				XAE_FEATURE_PARTIAL_RX_CSUM;
  			lp->features |= XAE_FEATURE_PARTIAL_RX_CSUM;

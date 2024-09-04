@@ -1,0 +1,94 @@
+From f282be90cb056eedeb029d9a4cef29b3ceacff5f Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Mon, 2 Sep 2024 17:40:09 -0400
+Subject: [PATCH] DMA Proxy driver more fixes for X2O
+
+---
+ drivers/Kconfig      |  4 ++--
+ drivers/Makefile     |  6 +++---
+ drivers/x2o/Kconfig  | 13 ++++++-------
+ drivers/x2o/Makefile |  2 +-
+ 4 files changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 61b405306326..1fd9dc570385 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -3,6 +3,8 @@ menu "Device Drivers"
+ 
+ # Keep I/O buses first
+ 
++source "drivers/x2o/Kconfig"
++
+ source "drivers/amba/Kconfig"
+ source "drivers/eisa/Kconfig"
+ source "drivers/pci/Kconfig"
+@@ -122,8 +124,6 @@ source "drivers/dma/Kconfig"
+ 
+ source "drivers/dma-buf/Kconfig"
+ 
+-source "drivers/x2o/Kconfig"
+-
+ source "drivers/dca/Kconfig"
+ 
+ source "drivers/auxdisplay/Kconfig"
+diff --git a/drivers/Makefile b/drivers/Makefile
+index e720161025d0..7e42669b88da 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -39,9 +39,6 @@ obj-y				+= clk/
+ # really early.
+ obj-$(CONFIG_DMADEVICES)	+= dma/
+ 
+-# X2O platform drivers.
+-obj-$(CONFIG_DMADEVICES)        += x2o/
+-
+ # SOC specific infrastructure drivers.
+ obj-y				+= soc/
+ 
+@@ -191,3 +188,6 @@ obj-$(CONFIG_GNSS)		+= gnss/
+ obj-$(CONFIG_INTERCONNECT)	+= interconnect/
+ obj-$(CONFIG_COUNTER)		+= counter/
+ obj-$(CONFIG_MOST)		+= most/
++
++# X2O platform drivers.
++obj-$(CONFIG_DMADEVICES)        += x2o/
+diff --git a/drivers/x2o/Kconfig b/drivers/x2o/Kconfig
+index 560605fd9b28..2d0c51dac14e 100644
+--- a/drivers/x2o/Kconfig
++++ b/drivers/x2o/Kconfig
+@@ -11,17 +11,16 @@ menuconfig X2O
+ # that for each of the symbols.
+ if X2O
+ 
+-config DMA_PROXY
+-	default y
+-	# depends on DMADEVICES && XILINX_DMA
+-	bool "Enable DMA Proxy driver"
+-	help
+-	  You can say N here if you don't intend to enable fast FPGA programming driver via DMA-JTAG chain within X2O platform.
+-
+ config XILINX_XVC
+ 	default y
+ 	bool "Enable Xilinx XVC driver"
+ 	help
+ 	  You can say N here if you don't intend to enable fast FPGA debugging driver via standard JTAG chain within X2O platform.
+ 
++config DMA_PROXY
++	default y
++	bool "Enable DMA Proxy driver"
++	help
++	  You can say N here if you don't intend to enable fast FPGA programming driver via DMA-JTAG chain within X2O platform.
++
+ endif # X2O
+diff --git a/drivers/x2o/Makefile b/drivers/x2o/Makefile
+index 634e69f0ec78..e70457a0a252 100644
+--- a/drivers/x2o/Makefile
++++ b/drivers/x2o/Makefile
+@@ -1,5 +1,5 @@
+ # Makefile for the Linux X2O platform drivers.
+ #
+ 
+-obj-$(CONFIG_DMA_PROXY) += dma-proxy/
+ obj-$(CONFIG_XILINX_XVC) += xilinx-xvc-driver/
++obj-$(CONFIG_DMA_PROXY) += dma-proxy/

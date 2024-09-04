@@ -67,7 +67,8 @@ static int xil_xvc_shift_bits(unsigned char* db_ptr, u32 tms_bits, u32 tdi_bits,
 		count--;
 	}
 	if (count == 0)	{
-		printk(KERN_ERR LOG_PREFIX "XVC transaction timed out (%0X)\n", control_reg_data);
+		//printk(KERN_ERR LOG_PREFIX "XVC transaction timed out (%0X)\n", control_reg_data);
+		printk(KERN_ERR "XVC transaction timed out (%0X)\n", control_reg_data);
 		return -ETIMEDOUT;
 	}
 

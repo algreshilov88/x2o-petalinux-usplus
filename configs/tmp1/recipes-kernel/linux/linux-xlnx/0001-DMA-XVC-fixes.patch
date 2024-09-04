@@ -1,0 +1,218 @@
+From 5e7d873f3b434b60b04b631b7ced9b02ca93ab41 Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Mon, 2 Sep 2024 22:12:28 -0400
+Subject: [PATCH] DMA/XVC fixes
+
+---
+ drivers/Kconfig                               |  2 +-
+ drivers/Makefile                              |  4 +--
+ drivers/dma/Kconfig                           |  6 +++++
+ drivers/dma/xilinx/Makefile                   |  3 +++
+ .../{x2o/dma-proxy => dma/xilinx}/dma-proxy.c |  0
+ .../{x2o/dma-proxy => dma/xilinx}/dma-proxy.h |  0
+ drivers/x2o/Kconfig                           | 26 -------------------
+ drivers/x2o/Makefile                          |  5 ----
+ drivers/x2o/dma-proxy/Makefile                |  3 ---
+ drivers/xvc/Kconfig                           | 20 ++++++++++++++
+ drivers/xvc/Makefile                          |  4 +++
+ .../{x2o => xvc}/xilinx-xvc-driver/Makefile   |  0
+ .../xilinx-xvc-driver/xilinx-xvc-driver.c     |  0
+ .../xilinx-xvc-driver/xvc_driver.c            |  0
+ .../xilinx-xvc-driver/xvc_driver.h            |  0
+ .../xilinx-xvc-driver/xvc_driver_base.c       |  0
+ .../xilinx-xvc-driver/xvc_ioctl.h             |  0
+ .../xilinx-xvc-driver/xvc_user_config.h       |  0
+ 18 files changed, 36 insertions(+), 37 deletions(-)
+ rename drivers/{x2o/dma-proxy => dma/xilinx}/dma-proxy.c (100%)
+ rename drivers/{x2o/dma-proxy => dma/xilinx}/dma-proxy.h (100%)
+ delete mode 100644 drivers/x2o/Kconfig
+ delete mode 100644 drivers/x2o/Makefile
+ delete mode 100644 drivers/x2o/dma-proxy/Makefile
+ create mode 100644 drivers/xvc/Kconfig
+ create mode 100644 drivers/xvc/Makefile
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/Makefile (100%)
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/xilinx-xvc-driver.c (100%)
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/xvc_driver.c (100%)
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/xvc_driver.h (100%)
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/xvc_driver_base.c (100%)
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/xvc_ioctl.h (100%)
+ rename drivers/{x2o => xvc}/xilinx-xvc-driver/xvc_user_config.h (100%)
+
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 4d7ac4c0f277..57553aa09b3f 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -10,7 +10,7 @@ source "drivers/cxl/Kconfig"
+ source "drivers/pcmcia/Kconfig"
+ source "drivers/rapidio/Kconfig"
+ 
+-source "drivers/x2o/Kconfig"
++source "drivers/xvc/Kconfig"
+ 
+ source "drivers/base/Kconfig"
+ 
+diff --git a/drivers/Makefile b/drivers/Makefile
+index e720161025d0..5a1fd1f52500 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -39,8 +39,8 @@ obj-y				+= clk/
+ # really early.
+ obj-$(CONFIG_DMADEVICES)	+= dma/
+ 
+-# X2O platform drivers.
+-obj-$(CONFIG_DMADEVICES)        += x2o/
++# Xilinx XVC driver.
++obj-y                           += xvc/
+ 
+ # SOC specific infrastructure drivers.
+ obj-y				+= soc/
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index 0856827aead0..a371a0bcdf75 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -827,4 +827,10 @@ config XILINX_VDMATEST
+ 	  Simple xilinx VDMA test client. Say N unless you're debugging a
+ 	  DMA Device driver.
+ 
++config XILINX_DMA_PROXY
++	default y
++	bool "Enable Xilinx DMA Proxy Test driver"
++	help
++	  You can say N here if you don't intend to enable fast FPGA programming driver via DMA-JTAG chain within X2O platform.
++
+ endif
+diff --git a/drivers/dma/xilinx/Makefile b/drivers/dma/xilinx/Makefile
+index e5c35aa1f463..259f64c0144c 100644
+--- a/drivers/dma/xilinx/Makefile
++++ b/drivers/dma/xilinx/Makefile
+@@ -5,3 +5,6 @@ obj-$(CONFIG_XILINX_DMA) += xilinx_dma.o
+ obj-$(CONFIG_XILINX_ZYNQMP_DMA) += zynqmp_dma.o
+ obj-$(CONFIG_XILINX_ZYNQMP_DPDMA) += xilinx_dpdma.o
+ obj-$(CONFIG_XILINX_FRMBUF) += xilinx_frmbuf.o
++
++# Makefile for Xilinx DMA Proxy driver.
++obj-$(CONFIG_XILINX_DMA_PROXY) += dma-proxy.o
+diff --git a/drivers/x2o/dma-proxy/dma-proxy.c b/drivers/dma/xilinx/dma-proxy.c
+similarity index 100%
+rename from drivers/x2o/dma-proxy/dma-proxy.c
+rename to drivers/dma/xilinx/dma-proxy.c
+diff --git a/drivers/x2o/dma-proxy/dma-proxy.h b/drivers/dma/xilinx/dma-proxy.h
+similarity index 100%
+rename from drivers/x2o/dma-proxy/dma-proxy.h
+rename to drivers/dma/xilinx/dma-proxy.h
+diff --git a/drivers/x2o/Kconfig b/drivers/x2o/Kconfig
+deleted file mode 100644
+index 2d0c51dac14e..000000000000
+--- a/drivers/x2o/Kconfig
++++ /dev/null
+@@ -1,26 +0,0 @@
+-# X2O platform support
+-#
+-
+-menuconfig X2O
+-	default y
+-	bool "X2O platform support"
+-	help
+-	  You can say N here if you don't intend to work with X2O platform. 
+-
+-# All the following symbols are dependent on X2O - do not repeat
+-# that for each of the symbols.
+-if X2O
+-
+-config XILINX_XVC
+-	default y
+-	bool "Enable Xilinx XVC driver"
+-	help
+-	  You can say N here if you don't intend to enable fast FPGA debugging driver via standard JTAG chain within X2O platform.
+-
+-config DMA_PROXY
+-	default y
+-	bool "Enable DMA Proxy driver"
+-	help
+-	  You can say N here if you don't intend to enable fast FPGA programming driver via DMA-JTAG chain within X2O platform.
+-
+-endif # X2O
+diff --git a/drivers/x2o/Makefile b/drivers/x2o/Makefile
+deleted file mode 100644
+index e70457a0a252..000000000000
+--- a/drivers/x2o/Makefile
++++ /dev/null
+@@ -1,5 +0,0 @@
+-# Makefile for the Linux X2O platform drivers.
+-#
+-
+-obj-$(CONFIG_XILINX_XVC) += xilinx-xvc-driver/
+-obj-$(CONFIG_DMA_PROXY) += dma-proxy/
+diff --git a/drivers/x2o/dma-proxy/Makefile b/drivers/x2o/dma-proxy/Makefile
+deleted file mode 100644
+index 21f2ece1e152..000000000000
+--- a/drivers/x2o/dma-proxy/Makefile
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# Makefile for DMA Proxy driver.
+-
+-obj-$(CONFIG_DMA_PROXY) := dma-proxy.o
+diff --git a/drivers/xvc/Kconfig b/drivers/xvc/Kconfig
+new file mode 100644
+index 000000000000..42b304a6621c
+--- /dev/null
++++ b/drivers/xvc/Kconfig
+@@ -0,0 +1,20 @@
++# XVC support
++#
++
++menuconfig XVC
++	default y
++	bool "XVC support"
++	help
++	  You can say N here if you don't intend to work with XVC. 
++
++# All the following symbols are dependent on XVC - do not repeat
++# that for each of the symbols.
++if XVC
++
++config XILINX_XVC
++	default y
++	bool "Enable Xilinx XVC driver"
++	help
++	  You can say N here if you don't intend to enable fast FPGA debugging driver via standard JTAG chain within X2O platform.
++
++endif # XVC
+diff --git a/drivers/xvc/Makefile b/drivers/xvc/Makefile
+new file mode 100644
+index 000000000000..35c0d8124c82
+--- /dev/null
++++ b/drivers/xvc/Makefile
+@@ -0,0 +1,4 @@
++# Makefile for the Xilinx XVC driver.
++#
++
++obj-$(CONFIG_XILINX_XVC) += xilinx-xvc-driver/
+diff --git a/drivers/x2o/xilinx-xvc-driver/Makefile b/drivers/xvc/xilinx-xvc-driver/Makefile
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/Makefile
+rename to drivers/xvc/xilinx-xvc-driver/Makefile
+diff --git a/drivers/x2o/xilinx-xvc-driver/xilinx-xvc-driver.c b/drivers/xvc/xilinx-xvc-driver/xilinx-xvc-driver.c
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/xilinx-xvc-driver.c
+rename to drivers/xvc/xilinx-xvc-driver/xilinx-xvc-driver.c
+diff --git a/drivers/x2o/xilinx-xvc-driver/xvc_driver.c b/drivers/xvc/xilinx-xvc-driver/xvc_driver.c
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/xvc_driver.c
+rename to drivers/xvc/xilinx-xvc-driver/xvc_driver.c
+diff --git a/drivers/x2o/xilinx-xvc-driver/xvc_driver.h b/drivers/xvc/xilinx-xvc-driver/xvc_driver.h
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/xvc_driver.h
+rename to drivers/xvc/xilinx-xvc-driver/xvc_driver.h
+diff --git a/drivers/x2o/xilinx-xvc-driver/xvc_driver_base.c b/drivers/xvc/xilinx-xvc-driver/xvc_driver_base.c
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/xvc_driver_base.c
+rename to drivers/xvc/xilinx-xvc-driver/xvc_driver_base.c
+diff --git a/drivers/x2o/xilinx-xvc-driver/xvc_ioctl.h b/drivers/xvc/xilinx-xvc-driver/xvc_ioctl.h
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/xvc_ioctl.h
+rename to drivers/xvc/xilinx-xvc-driver/xvc_ioctl.h
+diff --git a/drivers/x2o/xilinx-xvc-driver/xvc_user_config.h b/drivers/xvc/xilinx-xvc-driver/xvc_user_config.h
+similarity index 100%
+rename from drivers/x2o/xilinx-xvc-driver/xvc_user_config.h
+rename to drivers/xvc/xilinx-xvc-driver/xvc_user_config.h

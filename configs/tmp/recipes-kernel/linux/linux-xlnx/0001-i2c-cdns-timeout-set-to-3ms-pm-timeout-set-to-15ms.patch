@@ -1,4 +1,4 @@
-From 50efa891a11b285748db05a11b3314f8e1dbd104 Mon Sep 17 00:00:00 2001
+From f35f1f74561cf1a07684419f925f4f0b31683323 Mon Sep 17 00:00:00 2001
 From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
 Date: Sun, 16 Jul 2023 11:16:07 -0400
 Subject: [PATCH] i2c cdns timeout set to 3ms + pm timeout set to 15ms

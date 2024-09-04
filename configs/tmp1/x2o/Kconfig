@@ -1,0 +1,28 @@
+# X2O platform support
+#
+
+menuconfig X2O
+	default y
+	bool "X2O platform support"
+	help
+	  You can say N here if you don't intend to work with X2O platform. 
+
+# All the following symbols are dependent on X2O - do not repeat
+# that for each of the symbols.
+if X2O
+
+config XILINX_XVC
+	default y
+	bool "Enable Xilinx XVC driver"
+	help
+	  You can say N here if you don't intend to enable fast FPGA debugging driver via standard JTAG chain within X2O platform.
+
+config DMA_PROXY
+	default y
+	depends on DMADEVICES && XILINX_DMA
+	select DMA_ENGINE
+	bool "Enable DMA Proxy driver"
+	help
+	  You can say N here if you don't intend to enable fast FPGA programming driver via DMA-JTAG chain within X2O platform.
+
+endif # X2O
