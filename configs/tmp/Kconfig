@@ -3,6 +3,8 @@ menu "Device Drivers"
 
 # Keep I/O buses first
 
+source "drivers/x2o/Kconfig"
+
 source "drivers/amba/Kconfig"
 source "drivers/eisa/Kconfig"
 source "drivers/pci/Kconfig"
@@ -169,8 +171,6 @@ source "drivers/rpmsg/Kconfig"
 source "drivers/soundwire/Kconfig"
 
 source "drivers/soc/Kconfig"
-
-source "drivers/x2o/Kconfig"
 
 source "drivers/devfreq/Kconfig"
 

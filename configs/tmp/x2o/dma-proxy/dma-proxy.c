@@ -592,6 +592,9 @@ static int dma_proxy_probe(struct platform_device *pdev)
 		printk("Creating channel %s\r\n", lp->names[i]);
 		rc = create_channel(pdev, &lp->channels[i], lp->names[i], DMA_MEM_TO_DEV);
 
+		if (rc < 0) 
+			return -EPROBE_DEFER;
+
 		if (rc) 
 			return rc;
 		total_count++;
