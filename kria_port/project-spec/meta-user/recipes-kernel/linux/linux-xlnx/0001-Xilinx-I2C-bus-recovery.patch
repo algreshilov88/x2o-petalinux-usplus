@@ -1,0 +1,131 @@
+From 361f17b59e31ee4d1fbbf5d11d6b7b0dbf1d8eef Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Thu, 3 Oct 2024 17:34:39 -0400
+Subject: [PATCH] Xilinx I2C bus recovery
+
+---
+ drivers/i2c/busses/i2c-xiic.c | 71 +++++++++++++++++++++++++++--------
+ 1 file changed, 55 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-xiic.c b/drivers/i2c/busses/i2c-xiic.c
+index 9cc43c1eb171..e307c1915429 100644
+--- a/drivers/i2c/busses/i2c-xiic.c
++++ b/drivers/i2c/busses/i2c-xiic.c
+@@ -697,17 +697,28 @@ static irqreturn_t xiic_process(int irq, void *dev_id)
+ 			goto out;
+ 		}
+ 
+-		if (i2c->dynamic)
++		/*if (i2c->dynamic)
+ 			xiic_fill_tx_fifo(i2c);
+ 		else
+-			xiic_send_tx(i2c);
++			xiic_send_tx(i2c);*/
+ 
+ 		/* current message sent and there is space in the fifo */
+-		if (!xiic_tx_space(i2c) && xiic_tx_fifo_space(i2c) >= 2) {
+-			dev_dbg(i2c->adap.dev.parent,
++		//if (!xiic_tx_space(i2c) && xiic_tx_fifo_space(i2c) >= 2) {
++		if (xiic_tx_space(i2c)) {
++			if (i2c->dynamic)
++				xiic_fill_tx_fifo(i2c);
++			else
++				xiic_send_tx(i2c);
++		} else {
++			/* current message fully written */
++ 			dev_dbg(i2c->adap.dev.parent,
+ 				"%s end of message sent, nmsgs: %d\n",
+ 				__func__, i2c->nmsgs);
+-			if (i2c->nmsgs > 1) {
++			//if (i2c->nmsgs > 1) {
++			/* Don't move onto the next message until the TX FIFO empties,
++			 * to ensure that a NAK is not missed.
++			 */
++			if (i2c->nmsgs > 1 && (pend & XIIC_INTR_TX_EMPTY_MASK)) {
+ 				i2c->nmsgs--;
+ 				i2c->tx_msg++;
+ 				__xiic_start_xfer(i2c);
+@@ -718,11 +729,12 @@ static irqreturn_t xiic_process(int irq, void *dev_id)
+ 					"%s Got TX IRQ but no more to do...\n",
+ 					__func__);
+ 			}
+-		} else if (!xiic_tx_space(i2c) && (i2c->nmsgs == 1))
++		//} else if (!xiic_tx_space(i2c) && (i2c->nmsgs == 1))
+ 			/* current frame is sent and is last,
+ 			 * make sure to disable tx half
+ 			 */
+-			xiic_irq_dis(i2c, XIIC_INTR_TX_HALF_MASK);
++			//xiic_irq_dis(i2c, XIIC_INTR_TX_HALF_MASK);
++		}
+ 	}
+ 
+ 	if (pend & XIIC_INTR_BNB_MASK) {
+@@ -763,22 +775,22 @@ static int xiic_bus_busy(struct xiic_i2c *i2c)
+ 	return (sr & XIIC_SR_BUS_BUSY_MASK) ? -EBUSY : 0;
+ }
+ 
+-static int xiic_busy(struct xiic_i2c *i2c)
++static int xiic_wait_not_busy(struct xiic_i2c *i2c)
+ {
+ 	int tries = 3;
+ 	int err;
+ 
+-	if (i2c->tx_msg)
+-		return -EBUSY;
++	//if (i2c->tx_msg)
++	//	return -EBUSY;
+ 
+ 	/* In single master mode bus can only be busy, when in use by this
+ 	 * driver. If the register indicates bus being busy for some reason we
+ 	 * should ignore it, since bus will never be released and i2c will be
+ 	 * stuck forever.
+ 	 */
+-	if (i2c->singlemaster) {
+-		return 0;
+-	}
++	//if (i2c->singlemaster) {
++	//	return 0;
++	//}
+ 
+ 	/* for instance if previous transfer was terminated due to TX error
+ 	 * it might be that the bus is on it's way to become available
+@@ -1091,9 +1103,36 @@ static int xiic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	if (err < 0)
+ 		return err;
+ 
+-	err = xiic_busy(i2c);
+-	if (err)
+-		goto out;
++	//err = xiic_busy(i2c);
++	//if (err)
++	//	goto out;
++	if (i2c->tx_msg || i2c->rx_msg) {
++		err = -EBUSY;
++ 		goto out;
++	}
++
++	/* In single master mode bus can only be busy, when in use by this
++	 * driver. If the register indicates bus being busy for some reason we
++	 * should ignore it, since bus will never be released and i2c will be
++	 * stuck forever.
++	 */
++	if (!i2c->singlemaster) {
++		err = xiic_wait_not_busy(i2c);
++		if (err) {
++			/* If the bus is stuck in a busy state, such as due to spurious low
++			 * pulses on the bus causing a false start condition to be detected,
++			 * then try to recover by re-initializing the controller and check
++			 * again if the bus is still busy.
++			 */
++			dev_warn(i2c->adap.dev.parent, "I2C bus busy timeout, reinitializing\n");
++			err = xiic_reinit(i2c);
++			if (err)
++				goto out;
++			err = xiic_wait_not_busy(i2c);
++			if (err)
++				goto out;
++		}
++	}
+ 
+ 	i2c->tx_msg = msgs;
+ 	i2c->nmsgs = num;

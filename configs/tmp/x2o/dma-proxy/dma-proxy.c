@@ -644,6 +644,7 @@ static const struct of_device_id dma_proxy_of_ids[] = {
 static struct platform_driver dma_proxy_driver = {
 	.driver = {
 		.name = "dma_proxy_driver",
+		//.name = DRIVER_NAME,
 		.owner = THIS_MODULE,
 		.of_match_table = dma_proxy_of_ids,
 	},
@@ -662,8 +663,10 @@ static void __exit dma_proxy_exit(void)
 	platform_driver_unregister(&dma_proxy_driver);
 }
 
-module_init(dma_proxy_init)
-module_exit(dma_proxy_exit)
+late_initcall(dma_proxy_init);
+//module_init(dma_proxy_init);
+module_exit(dma_proxy_exit);
+//module_platform_driver(dma_proxy_driver);
 
 MODULE_AUTHOR("Xilinx, Inc.");
 MODULE_DESCRIPTION("DMA Proxy Prototype");
