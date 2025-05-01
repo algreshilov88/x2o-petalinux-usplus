@@ -37,7 +37,7 @@ status = "okay";
 disable-wp;
 /delete-property/ no-1-8-v;
 /*no-1-8-v;*/
-broken-cd;
+/*broken-cd;*/
 };
 
 &sdhci1 {
@@ -56,7 +56,7 @@ status = "okay";
 disable-wp;
 /delete-property/ no-1-8-v;
 /*no-1-8-v;*/
-broken-cd;
+/*broken-cd;*/
 };
 
 &dbg_debug_bridge_0 {

@@ -1,0 +1,7 @@
+macaddr_eth0=00:0A:35:00:00:11
+macaddr_eth1=80:D3:36:01:42:8E
+macaddr_eth2=00:0A:35:00:00:22
+
+ethernet_settings=setenv -f ethaddr $macaddr_eth0 && setenv -f eth1addr $macaddr_eth1 && setenv -f eth2addr $macaddr_eth2
+
+uenvcmd=run ethernet_settings
