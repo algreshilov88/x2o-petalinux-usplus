@@ -1,0 +1,22 @@
+From 566cbe885c740752e8ccad537151ef1660ce531e Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Mon, 12 May 2025 08:37:14 -0400
+Subject: [PATCH] Remove restoring the SD detection operation before handoff
+
+---
+ lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c b/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c
+index 7c632bd1ea..c9b2593e84 100644
+--- a/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c
++++ b/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c
+@@ -723,7 +723,7 @@ u32 XFsbl_Handoff (const XFsblPs * FsblInstancePtr, u32 PartitionNum, u32 EarlyH
+ 	static u32 CpuIndexEarlyHandoff = 0;
+ 
+ 	/* Restoring the SD card detection signal */
+-	XFsbl_Out32(IOU_SLCR_SD_CDN_CTRL, SdCdnRegVal);
++	// XFsbl_Out32(IOU_SLCR_SD_CDN_CTRL, SdCdnRegVal);
+ 	PartitionHeader =
+ 			&FsblInstancePtr->ImageHeader.PartitionHeader[PartitionNum];
+ 

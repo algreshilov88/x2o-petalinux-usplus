@@ -1,0 +1,65 @@
+From 47883ef4d820dd8ce22ef4b371ba6e30b49970f3 Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Thu, 15 May 2025 09:33:32 -0400
+Subject: [PATCH] Updated timeouts for SD clock stabilization
+
+---
+ XilinxProcessorIPLib/drivers/sdps/src/xsdps_card.c | 4 ++--
+ XilinxProcessorIPLib/drivers/sdps/src/xsdps_host.c | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/XilinxProcessorIPLib/drivers/sdps/src/xsdps_card.c b/XilinxProcessorIPLib/drivers/sdps/src/xsdps_card.c
+index d9335f9ed8..50cfb8f60f 100644
+--- a/XilinxProcessorIPLib/drivers/sdps/src/xsdps_card.c
++++ b/XilinxProcessorIPLib/drivers/sdps/src/xsdps_card.c
+@@ -1490,7 +1490,7 @@ s32 XSdPs_SetClock(XSdPs *InstancePtr, u32 SelFreq)
+ 	u16 ClockReg;
+ 	s32 Status;
+ 	u32 Reg;
+-	u32 Timeout = 1000U;
++	u32 Timeout = 5000U;
+ 
+ 	/* Disable clock */
+ 	XSdPs_WriteReg16(InstancePtr->Config.BaseAddress,
+@@ -1551,7 +1551,7 @@ s32 XSdPs_SetClock(XSdPs *InstancePtr, u32 SelFreq)
+ 		XSdPs_WriteReg(InstancePtr->Config.BaseAddress,
+ 					XSDPS_PHYCTRLREG2_OFFSET, Reg);
+ 
+-		/* Wait for 1000 micro sec for DLL READY */
++		/* Wait for 5000 micro sec for DLL READY */
+ 		do {
+ 			Reg = XSdPs_ReadReg(InstancePtr->Config.BaseAddress,
+ 					XSDPS_PHYCTRLREG2_OFFSET);
+diff --git a/XilinxProcessorIPLib/drivers/sdps/src/xsdps_host.c b/XilinxProcessorIPLib/drivers/sdps/src/xsdps_host.c
+index e09544a477..5a009a69d2 100644
+--- a/XilinxProcessorIPLib/drivers/sdps/src/xsdps_host.c
++++ b/XilinxProcessorIPLib/drivers/sdps/src/xsdps_host.c
+@@ -750,7 +750,7 @@ RETURN_PATH:
+ ******************************************************************************/
+ s32 XSdPs_EnableClock(XSdPs *InstancePtr, u16 ClockReg)
+ {
+-	u32 Timeout = 150000U;
++	u32 Timeout = 500000U;
+ 	s32 Status;
+ 	u16 ReadReg;
+ 	u16 ClkReg = ClockReg;
+@@ -759,7 +759,7 @@ s32 XSdPs_EnableClock(XSdPs *InstancePtr, u16 ClockReg)
+ 	XSdPs_WriteReg16(InstancePtr->Config.BaseAddress,
+ 			XSDPS_CLK_CTRL_OFFSET, ClkReg);
+ 
+-	/* Wait for 150ms for internal clock to stabilize */
++	/* Wait for 500ms for internal clock to stabilize */
+ 	do {
+ 		ReadReg = XSdPs_ReadReg16(InstancePtr->Config.BaseAddress,
+ 				XSDPS_CLK_CTRL_OFFSET);
+@@ -1367,8 +1367,8 @@ s32 XSdPs_SetVoltage18(XSdPs *InstancePtr)
+ 	XSdPs_WriteReg16(InstancePtr->Config.BaseAddress, XSDPS_HOST_CTRL2_OFFSET,
+ 			CtrlReg);
+ 
+-	/* Wait minimum 5mSec */
+-	(void)usleep(5000U);
++	/* Wait minimum 50mSec */
++	(void)usleep(50000U);
+ 
+ 	/* Check for 1.8V signal enable bit is cleared by Host */
+ 	Status = XSdPs_CheckVoltage18(InstancePtr);

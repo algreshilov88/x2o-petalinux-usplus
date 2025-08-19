@@ -13,5 +13,7 @@ do_configure:append:microblaze () {
 		install ${WORKDIR}/config.mk ${B}/source/board/xilinx/microblaze-generic/
 	fi
 }
-SRC_URI += "file://user_2025-03-03-13-15-00.cfg"
+SRC_URI += "file://user_2025-03-03-13-15-00.cfg \
+            file://0001-Set-timeout-on-SD-card-clock-enable.patch \
+            "
 

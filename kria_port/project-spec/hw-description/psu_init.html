@@ -1137,10 +1137,10 @@ inout
 MIO 39
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-SD 1
+GPIO1 MIO
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-sdio1_data_out[4]
+gpio1[39]
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 cmos
@@ -1163,10 +1163,10 @@ inout
 MIO 40
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-SD 1
+GPIO1 MIO
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-sdio1_data_out[5]
+gpio1[40]
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 cmos
@@ -1189,10 +1189,10 @@ inout
 MIO 41
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-SD 1
+GPIO1 MIO
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-sdio1_data_out[6]
+gpio1[41]
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 cmos
@@ -1215,10 +1215,10 @@ inout
 MIO 42
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-SD 1
+GPIO1 MIO
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-sdio1_data_out[7]
+gpio1[42]
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 cmos
@@ -1458,7 +1458,7 @@ sdio1_clk_out
 cmos
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-fast
+slow
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 pullup
@@ -1467,7 +1467,7 @@ pullup
 out
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-12
+4
 </TD>
 </TR>
 <TR valign="top">
@@ -2225,9 +2225,6 @@ PSS_REF_CLK
 <B>Peripheral</B>
 </TD>
 <TD width=10% BGCOLOR=#E0F8F7>
-<B>Requested Frequency (MHz)</B>
-</TD>
-<TD width=10% BGCOLOR=#E0F8F7>
 <B>Source</B>
 </TD>
 <TD width=10% BGCOLOR=#E0F8F7>
@@ -2237,9 +2234,6 @@ PSS_REF_CLK
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 GEM0 freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-125
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2253,9 +2247,6 @@ IOPLL
 GEM1 freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-125
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2265,9 +2256,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 QSPI freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-125
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2281,9 +2269,6 @@ IOPLL
 SDIO0 freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-200
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 RPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2295,21 +2280,15 @@ RPLL
 SDIO1 freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-200
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-187.498123
+49.999500
 </TD>
 </TR>
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 UART0 freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-100
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2323,9 +2302,6 @@ IOPLL
 I2C0 freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-100
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2335,9 +2311,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 SPI1 freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-200
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2351,9 +2324,6 @@ IOPLL
 CPU_R5 freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-533.333
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 RPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2363,9 +2333,6 @@ RPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 IOU_SWITCH freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-250
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2379,9 +2346,6 @@ IOPLL
 LPD_SWITCH freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-500
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2391,9 +2355,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 LPD_LSBUS freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-100
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2407,9 +2368,6 @@ IOPLL
 GEM_TSU freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-250
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2419,9 +2377,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 TIMESTAMP freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-100
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2435,9 +2390,6 @@ IOPLL
 PCAP freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-200
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2447,9 +2399,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 DBG_LPD freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-250
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2463,9 +2412,6 @@ IOPLL
 ADMA freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-500
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2475,9 +2421,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 PL0 freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-100
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
@@ -2491,9 +2434,6 @@ IOPLL
 PL1 freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-200
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 RPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2503,9 +2443,6 @@ RPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 PL2 freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-125
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 RPLL
@@ -2519,9 +2456,6 @@ RPLL
 AMS freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-50
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2531,9 +2465,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 ACPU freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-1333.333
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 APLL
@@ -2547,9 +2478,6 @@ APLL
 DBG FPD freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-250
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2559,9 +2487,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 DDR_CTRL freq MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-600.000
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 DPLL
@@ -2575,9 +2500,6 @@ DPLL
 GPU freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-600
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2587,9 +2509,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 GDMA freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-600
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 DPLL
@@ -2603,9 +2522,6 @@ DPLL
 DPDMA freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-600
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 APLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2615,9 +2531,6 @@ APLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 TOPSW_MAIN freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-533.33
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 DPLL
@@ -2631,9 +2544,6 @@ DPLL
 TOPSW_LSBUS freq (MHz)
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
-100
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
 IOPLL
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
@@ -2643,9 +2553,6 @@ IOPLL
 <TR valign="top">
 <TD width=10% BGCOLOR=#FBF5EF>
 DBG TSTMP freq (MHz)
-</TD>
-<TD width=10% BGCOLOR=#FBF5EF>
-250
 </TD>
 <TD width=10% BGCOLOR=#FBF5EF>
 IOPLL

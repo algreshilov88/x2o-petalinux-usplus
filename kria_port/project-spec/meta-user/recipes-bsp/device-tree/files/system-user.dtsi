@@ -35,8 +35,8 @@ status = "disabled";
 status = "okay";
 /*max-frequency = <50000000>;*/
 disable-wp;
-/delete-property/ no-1-8-v;
-/*no-1-8-v;*/
+/*/delete-property/ no-1-8-v;*/
+no-1-8-v;
 /*broken-cd;*/
 };
 
@@ -54,8 +54,8 @@ disable-wp;
 status = "okay";
 /*max-frequency = <50000000>;*/
 disable-wp;
-/delete-property/ no-1-8-v;
-/*no-1-8-v;*/
+/*/delete-property/ no-1-8-v;*/
+no-1-8-v;
 /*broken-cd;*/
 };
 

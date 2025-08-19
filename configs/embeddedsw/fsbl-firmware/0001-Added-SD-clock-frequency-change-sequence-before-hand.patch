@@ -1,0 +1,45 @@
+From 06725276801e084e9dbc5928a32f3456d1780858 Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Tue, 13 May 2025 08:33:09 -0400
+Subject: [PATCH] Added SD clock frequency change sequence before handoff
+
+---
+ lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c | 25 +++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c b/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c
+index 7c632bd1ea..9529ad8a2e 100644
+--- a/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c
++++ b/lib/sw_apps/zynqmp_fsbl/src/xfsbl_handoff.c
+@@ -722,6 +722,31 @@ u32 XFsbl_Handoff (const XFsblPs * FsblInstancePtr, u32 PartitionNum, u32 EarlyH
+ 	const XFsblPs_PartitionHeader * PartitionHeader;
+ 	static u32 CpuIndexEarlyHandoff = 0;
+ 
++	/* SD clock frequency change sequence */
++	u32 SdCdnRetVal = XFsbl_In32(IOU_SLCR_SD_CDN_CTRL);
++	SdCdnRetVal|= 0x5U;
++	XFsbl_Out32(IOU_SLCR_SD_CDN_CTRL, SdCdnRetVal);
++	
++	SdCdnRetVal = XFsbl_In32(IOU_SLCR_SD_CDN_CTRL);
++	SdCdnRetVal|= 0x800U;
++	XFsbl_Out32(IOU_SLCR_SD_CDN_CTRL, SdCdnRetVal);
++
++	(void) usleep(0x2U);
++
++	SdCdnRetVal = XFsbl_In32(IOU_SLCR_SD_CDN_CTRL);
++	SdCdnRetVal = (SdCdnRetVal>>1)&0x1;
++	while (!SdCdnRetVal)
++		{
++			SdCdnRetVal = XFsbl_In32(IOU_SLCR_SD_CDN_CTRL);
++			SdCdnRetVal = (SdCdnRetVal>>1)&0x1;
++		}
++
++	SdCdnRetVal = XFsbl_In32(IOU_SLCR_SD_CDN_CTRL);
++	SdCdnRetVal|= 0x4U;
++	XFsbl_Out32(IOU_SLCR_SD_CDN_CTRL, SdCdnRetVal);
++
++	(void) usleep(0x2U);
++
+ 	/* Restoring the SD card detection signal */
+ 	XFsbl_Out32(IOU_SLCR_SD_CDN_CTRL, SdCdnRegVal);
+ 	PartitionHeader =
