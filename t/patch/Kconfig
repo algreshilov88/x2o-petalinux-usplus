@@ -1,0 +1,26 @@
+# Copyright (c) 2018, Xilinx, Inc.
+#
+# SPDX-License-Identifier: GPL-2.0
+
+if ARCH_ZYNQMP
+
+config CMD_DHCP_CLIENT_ID
+	bool "dhcp_client_id"
+	default y
+	help
+	  This command builds CMS/HPM.3 compliant DHCP Client ID
+	  and sets MAC addresses for Kria SOM. Required for
+	  early network configuration with NFS rootfs.
+
+config CMD_ZYNQMP
+	bool "Enable ZynqMP specific commands"
+	default y
+	help
+	  Enable ZynqMP specific commands like "zynqmp secure"
+	  which is used for zynqmp secure image verification.
+	  The secure image is a xilinx specific BOOT.BIN with
+	  either authentication or encryption or both encryption
+	  and authentication feature enabled while generating
+	  BOOT.BIN using Xilinx bootgen tool.
+
+endif

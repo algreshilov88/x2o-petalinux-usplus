@@ -1,0 +1,34 @@
+From 50b23e17789cc05f624245ce7a13eeb093125e28 Mon Sep 17 00:00:00 2001
+From: Aleksei Greshilov <aleksei.greshilov@cern.ch>
+Date: Fri, 16 May 2025 12:23:17 -0400
+Subject: [PATCH] Set timeout on SD card clock enable
+
+---
+ drivers/mmc/sdhci.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
+index 766e4a6b0c..091671fb82 100644
+--- a/drivers/mmc/sdhci.c
++++ b/drivers/mmc/sdhci.c
+@@ -458,6 +458,20 @@ int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
+ 
+ 	clk |= SDHCI_CLOCK_CARD_EN;
+ 	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
++
++	/* Wait max 20 ms */
++	timeout = 20;
++	while (!((clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL))
++		& SDHCI_CLOCK_CARD_EN)) {
++		if (timeout == 0) {
++			printf("%s: SDHCI clock never enabled.\n",
++			       __func__);
++			return -EBUSY;
++		}
++		timeout--;
++		udelay(1000);
++	}
++
+ 	return 0;
+ }
+ 

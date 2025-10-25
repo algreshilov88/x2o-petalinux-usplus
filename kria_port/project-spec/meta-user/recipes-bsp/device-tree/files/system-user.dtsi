@@ -13,6 +13,23 @@ bootargs = "console=ttyPS0,115200 earlyprintk cpuidle.off=1 clk_ignore_unused ui
 	
 };
 
+&qspi {
+   status = "okay";
+   flash@0 {
+   compatible = "n25q512a", "jedec,spi-nor";
+   reg = <0x0>;
+   spi-tx-bus-width = <4>;
+   spi-rx-bus-width = <4>;
+   spi-max-frequency = <10000000>;
+   #address-cells = <1>;
+   #size-cells = <1>;
+   partition@qspi-fsbl-uboot {
+      label = "qspi-fsbl-uboot";
+      reg = <0x0 0x100000>;
+      };
+   };
+};
+
 &C2C_axisafety_1 {
 status = "disabled";
 };
