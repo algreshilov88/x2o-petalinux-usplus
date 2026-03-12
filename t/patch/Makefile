@@ -4,7 +4,12 @@
 # Michal Simek <michal.simek@xilinx.com>
 
 obj-y	:= zynqmp.o
+
+ifneq ($(CONFIG_SPL_BUILD),y)
+ifneq ($(CONFIG_TPL_BUILD),y)
 obj-$(CONFIG_CMD_DHCP_CLIENT_ID) += ipmi_u_boot.o
+endif
+endif
 
 ifneq ($(CONFIG_XILINX_PS_INIT_FILE),"")
 PS_INIT_FILE := $(shell cd $(srctree); readlink -f $(CONFIG_XILINX_PS_INIT_FILE))

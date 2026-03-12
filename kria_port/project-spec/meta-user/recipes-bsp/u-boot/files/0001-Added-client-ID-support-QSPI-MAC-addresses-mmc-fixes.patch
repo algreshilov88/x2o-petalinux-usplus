@@ -1,17 +1,17 @@
-From 16d73f7b621272d5ed3895ebbd3a29754be3a55f Mon Sep 17 00:00:00 2001
+From fd4570048048ca544c667548765c09a528a90f62 Mon Sep 17 00:00:00 2001
 From: agreshil <agreshil@uftrig01.dyndns.cern.ch>
-Date: Fri, 24 Oct 2025 01:35:00 +0200
+Date: Sun, 26 Oct 2025 02:06:00 +0200
 Subject: [PATCH] Added client ID support + QSPI/MAC addresses + mmc fixes
 
 ---
  board/xilinx/zynqmp/Kconfig       |   8 +
  board/xilinx/zynqmp/Makefile      |   6 +
- board/xilinx/zynqmp/ipmi_u_boot.c | 526 ++++++++++++++++++++++++++++++
+ board/xilinx/zynqmp/ipmi_u_boot.c | 559 ++++++++++++++++++++++++++++++
  board/xilinx/zynqmp/zynqmp.c      |  12 +
  drivers/mmc/mmc.c                 |  21 ++
  drivers/mmc/sdhci.c               |  23 +-
  include/mmc.h                     |   2 +
- 7 files changed, 596 insertions(+), 2 deletions(-)
+ 7 files changed, 629 insertions(+), 2 deletions(-)
  create mode 100644 board/xilinx/zynqmp/ipmi_u_boot.c
 
 diff --git a/board/xilinx/zynqmp/Kconfig b/board/xilinx/zynqmp/Kconfig
@@ -52,10 +52,10 @@ index a914028753..9492325f05 100644
  init-objs := ps_init_gpl.o
 diff --git a/board/xilinx/zynqmp/ipmi_u_boot.c b/board/xilinx/zynqmp/ipmi_u_boot.c
 new file mode 100644
-index 0000000000..3aa4954bd6
+index 0000000000..14539befec
 --- /dev/null
 +++ b/board/xilinx/zynqmp/ipmi_u_boot.c
-@@ -0,0 +1,526 @@
+@@ -0,0 +1,559 @@
 +/*
 + * ipmi_u_boot.c
 + *
@@ -96,6 +96,7 @@ index 0000000000..3aa4954bd6
 +#define set_MS          0x01200000
 +#define offset_ipmb     0x00000000
 +#define ha_offset       0x01220008
++#define qbv_on_off      0x01220000  /* Bit[1:0] = 1 to enable IPMB buffers */
 +
 +/* =========================
 + * ATCA site/slot mapping & constants
@@ -151,6 +152,37 @@ index 0000000000..3aa4954bd6
 +    return readl((void *)((char *)reg_base + offset));
 +}
 +
++/* =========================
++ * Checksums & small helpers
++ * ========================= */
++static inline uint8_t csum8(const uint8_t *p, int n)
++{
++    uint8_t s = 0; while (n--) s += *p++; return (uint8_t)(-s);
++}
++
++/* =========================
++ * IPMB buffers enable (MUST be called before using the bus)
++ * ========================= */
++static void ipmb_buffers_enable(void)
++{
++    unsigned int ret;
++
++    /* Enable IPMB buffers (set low two bits) */
++    ret = reg_read(devmem_ptr, qbv_on_off);
++    ret |= 0x03;
++    reg_write(devmem_ptr, qbv_on_off, ret);
++
++    if ((reg_read(devmem_ptr, qbv_on_off) & 0x03) == 0) {
++        reg_write(devmem_ptr, qbv_on_off, ret);
++    }
++
++    if ((reg_read(devmem_ptr, qbv_on_off) & 0x03) == 0) {
++        printf("ERROR: IPMB buffers enable failed!\n");
++    } else {
++        printf("INFO: IPMB buffers are enabled\n");
++    }
++}
++
 +static int dhcp_client_id_init_mem(void)
 +{
 +    /* Memory-mapped windows (no /dev/mem in U-Boot: direct phys) */
@@ -160,6 +192,9 @@ index 0000000000..3aa4954bd6
 +    printf("IPMB MMIO windows: slave=0x%llx, master=0x%llx\n",
 +           (unsigned long long)devmem_ptr,
 +           (unsigned long long)devmem_ipmb_ptr);
++
++    /* Ensure IPMB buffers are enabled before any IPMB tx/rx */
++    ipmb_buffers_enable();
 +    return 0;
 +}
 +
@@ -191,7 +226,7 @@ index 0000000000..3aa4954bd6
 +        if (ipmb_slot_pairs[i].ipmb_addr == la)
 +            return ipmb_slot_pairs[i].slot_number;
 +    }
-+    return 0; /* unknown */
++    return 0; 
 +}
 +
 +/* =========================
@@ -205,11 +240,6 @@ index 0000000000..3aa4954bd6
 +#define ST_TIME_EXCESS (1u << 5)
 +#define ST_SDA_HANG    (1u << 6)
 +#define ST_CLR_LATCH   (1u << 16)
-+
-+static inline uint8_t csum8(const uint8_t *p, int n)
-+{
-+    uint8_t s = 0; while (n--) s += *p++; return (uint8_t)(-s);
-+}
 +
 +/* Send already-built IPMB payload on channel 0/1 */
 +static int send_ipmi_channel(int channel, uint8_t *message, int msg_len)
@@ -304,21 +334,24 @@ index 0000000000..3aa4954bd6
 +
 +/* =========================
 + * PICMG Get Shelf Address Info → 20-byte ASCII shelf string
++ * (includes required PICMG ID 0x00 in request)
 + * ========================= */
 +static int get_shelf_ascii20(uint8_t shelf_ascii[20])
 +{
 +    uint8_t rs_sa7 = 0x20;                              /* Shelf Manager */
 +    uint8_t rq_sa7 = (read_local_ipmc_address() >> 1);  /* requester (7-bit) */
 +    uint8_t seq_lun = 0x00;
-+    uint8_t req[8];
++    uint8_t req[9]; 
 +    int q = 0;
 +
-+    /* Request: [netfn,csum1,rqSA<<1,seq,cmd,csum2] */
++    /* Correct PICMG request:
++     * [netfn,csum1,rqSA<<1,seq,cmd, PICMG_ID(0x00), csum2] */
 +    req[q++] = IPMI_NETFN_PICMG;
 +    req[q++] = csum8((uint8_t[]){ (uint8_t)(rs_sa7 << 1), IPMI_NETFN_PICMG }, 2);
 +    req[q++] = (uint8_t)(rq_sa7 << 1);
 +    req[q++] = seq_lun;
 +    req[q++] = IPMI_CMD_GET_SHELF_ADDR;
++    req[q++] = 0x00; /* PICMG Group Extension ID */
 +    req[q++] = csum8(&req[2], q - 2);
 +
 +    int ret = send_ipmi_channel(0, req, q);
