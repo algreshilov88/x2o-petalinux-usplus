@@ -6,5 +6,7 @@ YAML_COMPILER_FLAGS:append = " -DUHS_MODE_ENABLE"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI += "file://0001-Updated-timeouts-for-SD-clock-stabilization.patch"
+SRC_URI += "file://0001-Updated-timeouts-for-SD-clock-stabilization.patch \
+	    file://0001-zynqmp-fsbl-start-fpd-watchdog0-petalinux-2022.2.patch \
+	    "
 

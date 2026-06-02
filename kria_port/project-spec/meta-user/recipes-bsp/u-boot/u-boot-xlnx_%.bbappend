@@ -15,5 +15,5 @@ do_configure:append:microblaze () {
 }
 SRC_URI += "file://user_2025-03-03-13-15-00.cfg \
             file://0001-Set-timeout-on-SD-card-clock-enable.patch \
-            file://0001-Added-client-ID-support-QSPI-MAC-addresses-mmc-fixes.patch \
+            file://0001-Added-client-ID-support-QSPI-MAC-addresses-mmc-fixes-shelf-gdi-sequence-gdi-fixed-v2.patch \
             "

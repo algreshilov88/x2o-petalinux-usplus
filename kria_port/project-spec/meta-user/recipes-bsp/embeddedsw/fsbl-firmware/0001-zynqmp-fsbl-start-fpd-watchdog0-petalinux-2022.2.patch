@@ -1,0 +1,127 @@
+From 2222222222222222222222222222222222222222 Mon Sep 17 00:00:00 2001
+From: user <user@example.com>
+Date: Fri, 8 May 2026 12:00:00 +0000
+Subject: [PATCH] zynqmp_fsbl: start FPD watchdog0 before handoff
+
+Start the ZynqMP FPD watchdog0 from FSBL before handoff to U-Boot.
+Timeout is configured to approximately 40 seconds assuming a 100 MHz
+FPD WDT input clock.
+
+U-Boot/Linux must periodically reload the watchdog by writing 0x1999 to:
+    0xFD4D0000 + 0x8
+
+Signed-off-by: user <user@example.com>
+---
+ lib/sw_apps/zynqmp_fsbl/src/xfsbl_hooks.c | 72 +++++++++++++++++++++++
+ 1 file changed, 72 insertions(+)
+
+diff --git a/lib/sw_apps/zynqmp_fsbl/src/xfsbl_hooks.c b/lib/sw_apps/zynqmp_fsbl/src/xfsbl_hooks.c
+index 0000000000..1111111111 100644
+--- a/lib/sw_apps/zynqmp_fsbl/src/xfsbl_hooks.c
++++ b/lib/sw_apps/zynqmp_fsbl/src/xfsbl_hooks.c
+@@ -31,6 +31,7 @@
+ #include "xfsbl_hw.h"
+ #include "xfsbl_hooks.h"
+ #include "psu_init.h"
++#include "xil_io.h"
+
+ /************************** Constant Definitions *****************************/
+
+@@ -48,6 +49,76 @@
+ /************************** Variable Definitions *****************************/
+
++/*
++ * Zynq UltraScale+ MPSoC FPD WDT / watchdog0.
++ *
++ * Base address:
++ *   watchdog0 / FPD WDT = 0xFD4D0000
++ *
++ * Heartbeat/reload:
++ *   write 0x1999 to WDT base + 0x8.
++ */
++#define FSBL_WDT0_BASE                  0xFD4D0000U
++
++#define FSBL_WDT_ZMR_OFFSET             0x00000000U
++#define FSBL_WDT_CCR_OFFSET             0x00000004U
++#define FSBL_WDT_RESTART_OFFSET         0x00000008U
++
++#define FSBL_WDT_ZMR_WDEN_MASK          0x00000001U
++#define FSBL_WDT_ZMR_RSTEN_MASK         0x00000002U
++#define FSBL_WDT_ZMR_IRQEN_MASK         0x00000004U
++#define FSBL_WDT_ZMR_RSTLEN_16          0x00000030U
++#define FSBL_WDT_ZMR_ZKEY_VAL           0x00ABC000U
++
++#define FSBL_WDT_CCR_CRV_MASK           0x00003FFCU
++#define FSBL_WDT_CCR_CRV_SHIFT          2U
++#define FSBL_WDT_REGISTER_ACCESS_KEY    0x00920000U
++
++#define FSBL_WDT_RESTART_KEY            0x00001999U
++
++#define FSBL_WDT_COUNTER_VALUE_DIVISOR  0x1000U
++#define FSBL_WDT_COUNTER_MAX            0xFFFU
++#define FSBL_WDT_PRESCALE_4096          4096U
++#define FSBL_WDT_PRESCALE_SELECT_4096   0x00000003U
++
++/*
++ * Most ZynqMP designs use 100 MHz for the FPD WDT input clock.
++ * If your platform uses another WDT clock, override this value.
++ */
++#ifndef FSBL_WDT0_CLK_HZ
++#define FSBL_WDT0_CLK_HZ                100000000U
++#endif
++
++#define FSBL_WDT0_TIMEOUT_SEC           40U
++
++static void XFsbl_StartFpdWdt0(void)
++{
++	u32 Count;
++	u32 Data;
++
++	/*
++	 * Cadence WDT formula:
++	 *   Count = (timeout * clock / prescaler) / 0x1000 + 1
++	 */
++	Count = (FSBL_WDT0_TIMEOUT_SEC *
++		(FSBL_WDT0_CLK_HZ / FSBL_WDT_PRESCALE_4096)) /
++		FSBL_WDT_COUNTER_VALUE_DIVISOR;
++	Count += 1U;
++
++	if (Count > FSBL_WDT_COUNTER_MAX) {
++		Count = FSBL_WDT_COUNTER_MAX;
++	}
++
++	/* Unlock/stop mode register before programming. */
++	Xil_Out32(FSBL_WDT0_BASE + FSBL_WDT_ZMR_OFFSET,
++		  FSBL_WDT_ZMR_ZKEY_VAL);
++
++	Data = ((Count << FSBL_WDT_CCR_CRV_SHIFT) & FSBL_WDT_CCR_CRV_MASK) |
++	       FSBL_WDT_REGISTER_ACCESS_KEY |
++	       FSBL_WDT_PRESCALE_SELECT_4096;
++
++	Xil_Out32(FSBL_WDT0_BASE + FSBL_WDT_CCR_OFFSET, Data);
++
++	Data = FSBL_WDT_ZMR_ZKEY_VAL |
++	       FSBL_WDT_ZMR_WDEN_MASK |
++	       FSBL_WDT_ZMR_RSTEN_MASK |
++	       FSBL_WDT_ZMR_RSTLEN_16;
++
++	Data &= ~FSBL_WDT_ZMR_IRQEN_MASK;
++
++	Xil_Out32(FSBL_WDT0_BASE + FSBL_WDT_ZMR_OFFSET, Data);
++	Xil_Out32(FSBL_WDT0_BASE + FSBL_WDT_RESTART_OFFSET,
++		  FSBL_WDT_RESTART_KEY);
++}
++
+ #ifdef XFSBL_BS
+ /*****************************************************************************/
+ /**
+@@ -114,6 +185,7 @@ u32 XFsbl_HookBeforeHandoff(u32 EarlyHandoff)
+ {
+ 	u32 Status = XFSBL_SUCCESS;
+
++	XFsbl_StartFpdWdt0();
+ 	/**
+ 	 * Add the code here
+ 	 */
+-- 
+2.34.1
